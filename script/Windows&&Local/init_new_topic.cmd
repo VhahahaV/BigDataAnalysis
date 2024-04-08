@@ -1,0 +1,1 @@
+bin\windows\kafka-console-consumer.bat  --bootstrap-server localhost:9092 --topic storm-topic --from-beginning

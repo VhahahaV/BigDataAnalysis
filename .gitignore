@@ -1,4 +1,4 @@
 .idea/
 target/
 ./logs/
-src/resources/*.json
+src/resources/*.jsongit

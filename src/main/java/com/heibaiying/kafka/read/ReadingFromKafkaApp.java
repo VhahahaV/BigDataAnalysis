@@ -19,25 +19,25 @@ import org.apache.storm.topology.TopologyBuilder;
  */
 public class ReadingFromKafkaApp {
 
-    private static final String BOOTSTRAP_SERVERS = "node1:9092";
+    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
     private static final String TOPIC_NAME = "storm-topic";
 
     public static void main(String[] args) {
 
         final TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout("kafka_spout", new KafkaSpout<>(getKafkaSpoutConfig(BOOTSTRAP_SERVERS, TOPIC_NAME)), 1);
-        builder.setBolt("bolt", new LogConsoleBolt()).shuffleGrouping("kafka_spout");
+        builder.setBolt("bolt", new DataHandleBolt()).shuffleGrouping("kafka_spout");
 
         // 如果外部传参cluster则代表线上环境启动,否则代表本地启动
         if (args.length > 0 && args[0].equals("cluster")) {
             try {
-                StormSubmitter.submitTopology("ClusterReadingFromKafkaApp", new Config(), builder.createTopology());
+                StormSubmitter.submitTopology("ClusterProcessDataFromKafkaApp", new Config(), builder.createTopology());
             } catch (AlreadyAliveException | InvalidTopologyException | AuthorizationException e) {
                 e.printStackTrace();
             }
         } else {
             LocalCluster cluster = new LocalCluster();
-            cluster.submitTopology("LocalReadingFromKafkaApp",
+            cluster.submitTopology("LocalProcessDataFromKafkaApp",
                     new Config(), builder.createTopology());
         }
     }

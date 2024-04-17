@@ -29,13 +29,15 @@ public class DataSourceSpout extends BaseRichSpout {
     private SpoutOutputCollector spoutOutputCollector;
     private int index = 0; // 用于跟踪当前发送的数据索引
 
+    private JSONArray array = new JSONArray();
+
     @Override
     public void open(Map map, TopologyContext topologyContext, SpoutOutputCollector spoutOutputCollector) {
         this.spoutOutputCollector = spoutOutputCollector;
         // 读取JSON数据到modelObjects列表中
         try {
             String jsonString = new String(Files.readAllBytes(Paths.get(metaFile.getPath())));
-            JSONArray array = JSONArray.parseArray(jsonString);
+            array = JSONArray.parseArray(jsonString);
             this.modelObjects = JSON.parseArray(jsonString, ModelObject.class);
         } catch (IOException e) {
             e.printStackTrace();
@@ -48,10 +50,15 @@ public class DataSourceSpout extends BaseRichSpout {
         if (index >= modelObjects.size()) {
             index = 0; // 如果达到列表末尾，重新开始
         }
-        ModelObject modelObject = modelObjects.get(index++);
-        // 调用productData将ModelObject格式化为可发送的数据
-        String data = productData(modelObject);
+//        ModelObject modelObject = modelObjects.get(index++);
+//        // 调用productData将ModelObject格式化为可发送的数据
+//        String data = productData(modelObject);
+//        spoutOutputCollector.emit(new Values("modelObject", data));
+
+        Object obj = array.get(index++);
+        String data = JSON.toJSONString(obj);
         spoutOutputCollector.emit(new Values("modelObject", data));
+
         Utils.sleep(1000);
     }
 

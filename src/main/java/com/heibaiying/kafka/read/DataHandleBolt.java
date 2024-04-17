@@ -19,7 +19,8 @@ import java.util.Set;
 public class DataHandleBolt extends BaseRichBolt {
 
     private OutputCollector collector;
-    private static final String DIRECTORY_PATH = "src/main/resources/handled_data";
+//    private static final String DIRECTORY_PATH = "src/main/resources/handled_data";
+    private static final String DIRECTORY_PATH = "/home/huazhao/ClusterWork/handled_data";
     private static final long MAX_FILE_SIZE = 1024 * 1024; // 1MB
     private static int fileIndex = 1;
     private static File file = new File(DIRECTORY_PATH, "CleanData" + fileIndex + ".json");

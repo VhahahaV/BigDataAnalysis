@@ -19,7 +19,7 @@ import org.apache.storm.topology.TopologyBuilder;
  */
 public class ReadingFromKafkaApp {
 
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String BOOTSTRAP_SERVERS = "node1:9092";
     private static final String TOPIC_NAME = "storm-topic";
 
     public static void main(String[] args) {

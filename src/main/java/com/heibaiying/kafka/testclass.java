@@ -2,15 +2,22 @@ package com.heibaiying.kafka;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.heibaiying.kafka.entity.ModelObject;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.storm.task.OutputCollector;
+import org.apache.storm.task.TopologyContext;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 
 public class testclass {
@@ -31,49 +38,59 @@ public class testclass {
 //
 //    }
     public static void main(String[] args) {
-
-        prepare();
+        String jsonString = "[{\"modelId\":\"1\",\"downloads\":100},{\"modelId\":\"2\",\"downloads\":200}]";
         try {
-            mkDir();
-            create();
-        } catch (Exception e) {
-            e.printStackTrace();
+            prepareHdfs(null, null, null);
+            writeToHDFS(jsonString, "/user/storm_processed/test/test.json");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static final String HDFS_PATH = "hdfs://10.119.12.221:9000";
-    private static final String HDFS_USER = "root";
-    private static FileSystem fileSystem;
 
-    private static void prepare() {
+    private static final String HDFS_PATH = "hdfs://node1:9000";
+    private static final String HDFS_USER = "root";
+    private static FileSystem fileSystem = null;
+
+
+    private static void prepareHdfs(Map stormConf, TopologyContext context, OutputCollector collector) {
         try {
             Configuration configuration = new Configuration();
-            // 这里我启动的是单节点的 Hadoop,所以副本系数设置为 1,默认值为 3
-            configuration.set("dfs.replication", "3");
-                fileSystem = FileSystem.get(new URI(HDFS_PATH), configuration, HDFS_USER);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+            configuration.set("fs.defaultFS", HDFS_PATH);
+            configuration.set("dfs.replication", "1");
+            fileSystem = FileSystem.get(new URI(HDFS_PATH), configuration, HDFS_USER);
+            mkDir("/user/storm_processed/test/");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static void mkDir() throws Exception {
-        fileSystem.mkdirs(new Path("/storm_processed/"));
+    private static void mkDir(String path) throws IOException {
+        Path hdfsPath = new Path(path);
+        if (!fileSystem.exists(hdfsPath)) {
+            fileSystem.mkdirs(hdfsPath);
+        }
     }
 
-    private static void create() throws Exception {
-        // 如果文件存在，默认会覆盖, 可以通过第二个参数进行控制。第三个参数可以控制使用缓冲区的大小
-        FSDataOutputStream out = fileSystem.create(new Path("/storm_processed/test/a.txt"),
-                true, 4096);
-        out.write("hello hadoop!".getBytes());
-        out.write("hello spark!".getBytes());
-        out.write("hello flink!".getBytes());
-        // 强制将缓冲区中内容刷出
-        out.flush();
-        out.close();
+
+    private static void writeToHDFS(String content, String filePath) throws IOException {
+        Path path = new Path(filePath);
+        FSDataOutputStream out = null;
+        if (fileSystem.exists(path)) {
+            // Append to file if it already exists
+            out = fileSystem.append(path);
+        } else {
+            // Create file if it does not exist
+            out = fileSystem.create(path, true);
+        }
+        try {
+            out.writeBytes(content);
+            out.flush(); // Ensure all data is sent to HDFS
+        } finally {
+            IOUtils.closeStream(out); // Safely close the output stream
+        }
     }
+
+
 
 }

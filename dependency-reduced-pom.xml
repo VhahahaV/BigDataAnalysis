@@ -68,5 +68,6 @@
   <properties>
     <storm.version>1.2.2</storm.version>
     <kafka.version>2.2.0</kafka.version>
+    <hadoop.version>3.2.4</hadoop.version>
   </properties>
 </project>

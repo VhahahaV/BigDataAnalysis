@@ -19,13 +19,17 @@ import java.util.Set;
 public class DataHandleBolt extends BaseRichBolt {
 
     private OutputCollector collector;
-//    private static final String DIRECTORY_PATH = "src/main/resources/handled_data";
-    private static final String DIRECTORY_PATH = "/home/huazhao/ClusterWork/handled_data";
+    private static final String DIRECTORY_PATH = "src/main/resources/handled_data";
+//    private static final String DIRECTORY_PATH = "/home/huazhao/ClusterWork/handled_data";
     private static final long MAX_FILE_SIZE = 1024 * 1024; // 1MB
     private static int fileIndex = 1;
     private static File file = new File(DIRECTORY_PATH, "CleanData" + fileIndex + ".json");
     private static FileWriter writer;
     private Set<String> modelIds = new HashSet<>();
+
+    private long success = 0L;
+    private long failure = 0L;
+
 
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
         this.collector = collector;
@@ -40,9 +44,12 @@ public class DataHandleBolt extends BaseRichBolt {
         try {
             String value = input.getStringByField("value");
             if (processJson(value)) {
+                success++;
+                System.out.println("JSON processing successful: " + success);
                 writeToFile(value);
             } else {
-                System.out.println("JSON does not meet the requirements or is a duplicate.");
+                failure++;
+                System.out.println("JSON processing failed: " + failure);
             }
             collector.ack(input);
         } catch (Exception e) {

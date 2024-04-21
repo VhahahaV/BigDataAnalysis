@@ -11,9 +11,21 @@
     <properties>
         <storm.version>1.2.2</storm.version>
         <kafka.version>2.2.0</kafka.version>
+        <hadoop.version>3.2.4</hadoop.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+            <version>${hadoop.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
@@ -34,6 +46,26 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.47</version>
         </dependency>
+        <!--Hadoop-client-->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-reload4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>30.0-jre</version> <!-- Adjust the version as necessary -->
+        </dependency>
+
+
+
     </dependencies>
 
     <build>
